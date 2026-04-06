@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas = ["chocogo"]
+}
+
+model tipo_usuario {
+  id        Int       @id @default(autoincrement())
+  descricao String    @db.VarChar(20)
+  usuarios  usuario[]
+  @@schema("chocogo")
+}
+
+model tipo_entrega {
+  id        Int      @id @default(autoincrement())
+  descricao String   @db.VarChar(20)
+  pedidos   pedido[]
+  @@schema("chocogo")
+}
+
+model status_pedido {
+  id        Int      @id @default(autoincrement())
+  descricao String   @db.VarChar(30)
+  pedidos   pedido[]
+  @@schema("chocogo")
+}
+
+model categoria {
+  id        Int                 @id @default(autoincrement())
+  nome      String              @db.VarChar(50)
+  descricao String?
+  produtos  produto_categoria[]
+  @@schema("chocogo")
+}
+
+model usuario {
+  id              Int          @id @default(autoincrement())
+  nome            String       @db.VarChar(100)
+  email           String?      @db.VarChar(100)
+  telefone        String?      @db.VarChar(20)
+  senha           String       @db.VarChar(254)
+  id_tipo_usuario Int
+  data_criacao    DateTime     @default(now())
+  carrinho        carrinho[]
+  endereco        endereco[]
+  pedido          pedido[]
+  tipo_usuario    tipo_usuario @relation(fields: [id_tipo_usuario], references: [id])
+  @@schema("chocogo")
+}
+
+model endereco {
+  id          Int      @id @default(autoincrement())
+  id_usuario  Int
+  logradouro  String   @db.VarChar(150)
+  numero      String   @db.VarChar(10)
+  complemento String?  @db.VarChar(50)
+  bairro      String   @db.VarChar(50)
+  cidade      String   @db.VarChar(50)
+  cep         String   @db.VarChar(9)
+  principal   Boolean  @default(false)
+  usuario     usuario  @relation(fields: [id_usuario], references: [id])
+  pedido      pedido[]
+  @@schema("chocogo")
+}
+
+model carrinho {
+  id           Int              @id @default(autoincrement())
+  id_usuario   Int
+  data_criacao DateTime         @default(now())
+  usuario      usuario          @relation(fields: [id_usuario], references: [id])
+  itens        carrinho_itens[]
+  @@schema("chocogo")
+}
+
+model carrinho_itens {
+  id          Int      @id @default(autoincrement())
+  id_carrinho Int
+  id_produto  Int
+  quantidade  Int
+  carrinho    carrinho @relation(fields: [id_carrinho], references: [id])
+  @@schema("chocogo")
+}
+
+model produto {
+  id          Int                 @id @default(autoincrement())
+  nome        String              @db.VarChar(100)
+  codigo_sku  String              @db.VarChar(50)
+  peso_gramas Int
+  preco       Decimal             @db.Decimal(10, 2)
+  ativo       Boolean             @default(true)
+  estoque     estoque[]
+  itens       pedido_item[]
+  categorias  produto_categoria[]
+  imagens     produto_imagem[]
+  @@schema("chocogo")
+}
+
+model produto_categoria {
+  id           Int       @id @default(autoincrement())
+  id_produto   Int
+  id_categoria Int
+  categoria    categoria @relation(fields: [id_categoria], references: [id])
+  produto      produto   @relation(fields: [id_produto], references: [id])
+  @@schema("chocogo")
+}
+
+model produto_imagem {
+  id         Int     @id @default(autoincrement())
+  id_produto Int
+  url        String  @db.VarChar(254)
+  princiapl  Boolean @default(false)
+  ordem      Int
+  produto    produto @relation(fields: [id_produto], references: [id])
+  @@schema("chocogo")
+}
+
+model pedido {
+  id               Int           @id @default(autoincrement())
+  id_usuario       Int
+  id_endereco      Int?
+  data_pedido      DateTime      @default(now())
+  id_status_pedido Int
+  id_tipo_entrega  Int
+  meio_pagamento   String        @db.VarChar(50)
+  valor_total      Decimal       @db.Decimal(10, 2)
+  valor_frete      Decimal       @db.Decimal(10, 2)
+  endereco         endereco?     @relation(fields: [id_endereco], references: [id])
+  status_pedido    status_pedido @relation(fields: [id_status_pedido], references: [id])
+  tipo_entrega     tipo_entrega  @relation(fields: [id_tipo_entrega], references: [id])
+  usuario          usuario       @relation(fields: [id_usuario], references: [id])
+  itens            pedido_item[]
+  @@schema("chocogo")
+}
+
+model pedido_item {
+  id            Int     @id @default(autoincrement())
+  id_pedido     Int
+  id_produto    Int
+  quantidade    Int
+  preco_momento Decimal @db.Decimal(10, 2)
+  subtotal      Decimal @db.Decimal(10, 2)
+  pedido        pedido  @relation(fields: [id_pedido], references: [id])
+  produto       produto @relation(fields: [id_produto], references: [id])
+  @@schema("chocogo")
+}
+
+model estoque {
+  id             Int      @id @default(autoincrement())
+  id_produto     Int
+  quantidade     Int
+  quantidade_min Int
+  data_update    DateTime @default(now())
+  produto        produto  @relation(fields: [id_produto], references: [id])
+  @@schema("chocogo")
+}

@@ -1,0 +1,34 @@
+{
+  "name": "chocogo",
+  "version": "1.0.0",
+  "description": "Projeto de TCC para FACCAT",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacketOfSeville/chocogo.git"
+  },
+  "author": "Vinicius da Cruz Krummenauer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JacketOfSeville/chocogo/issues"
+  },
+  "homepage": "https://github.com/JacketOfSeville/chocogo#readme",
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "@types/pg": "^8.20.0",
+    "dotenv": "^17.4.0",
+    "prisma": "^7.6.0",
+    "process": "^0.11.10",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "pg": "^8.20.0"
+  },
+  "type": "module"
+}
