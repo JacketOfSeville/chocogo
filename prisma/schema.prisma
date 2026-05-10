@@ -112,7 +112,7 @@ model produto_imagem {
   id         Int     @id @default(autoincrement())
   id_produto Int
   url        String  @db.VarChar(254)
-  princiapl  Boolean @default(false)
+  principal  Boolean @default(false)
   ordem      Int
   produto    produto @relation(fields: [id_produto], references: [id])
   @@schema("chocogo")
