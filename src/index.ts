@@ -1,6 +1,7 @@
 import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma";
 import { authRoutes } from "./routes/authRoutes";
@@ -21,6 +22,18 @@ const port = Number(process.env.PORT ?? 3000);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsPath = path.resolve(__dirname, "../uploads");
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(express.json());
 
