@@ -110,6 +110,8 @@ router.post("/", async (req, res, next) => {
         ...(parsed.data.id_endereco !== undefined ? { id_endereco: parsed.data.id_endereco } : {}),
         id_status_pedido: parsed.data.id_status_pedido,
         id_tipo_entrega: parsed.data.id_tipo_entrega,
+        ...(parsed.data.pronto_retirada !== undefined ? { pronto_retirada: parsed.data.pronto_retirada } : {}),
+        ...(parsed.data.entregue !== undefined ? { entregue: parsed.data.entregue } : {}),
         meio_pagamento: parsed.data.meio_pagamento,
         valor_total: new Prisma.Decimal(parsed.data.valor_total),
         valor_frete: new Prisma.Decimal(parsed.data.valor_frete),
@@ -148,6 +150,10 @@ router.put("/:id", async (req, res, next) => {
       throw new ApiError(403, "Sem permissão para transferir pedido para outro usuário");
     }
 
+    if ((parsed.data.pronto_retirada !== undefined || parsed.data.entregue !== undefined) && !isAdmin(user.roleId)) {
+      throw new ApiError(403, "Somente administradores podem atualizar flags de entrega");
+    }
+
     if (
       parsed.data.id_usuario !== undefined ||
       parsed.data.id_endereco !== undefined ||
@@ -178,6 +184,14 @@ router.put("/:id", async (req, res, next) => {
 
     if (parsed.data.id_tipo_entrega !== undefined) {
       updateData.id_tipo_entrega = parsed.data.id_tipo_entrega;
+    }
+
+    if (parsed.data.pronto_retirada !== undefined) {
+      updateData.pronto_retirada = parsed.data.pronto_retirada;
+    }
+
+    if (parsed.data.entregue !== undefined) {
+      updateData.entregue = parsed.data.entregue;
     }
 
     if (parsed.data.meio_pagamento !== undefined) {

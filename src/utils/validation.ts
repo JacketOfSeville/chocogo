@@ -153,6 +153,8 @@ export const pedidoCreateSchema = z.object({
   id_endereco: z.number().int().positive().nullable().optional(),
   id_status_pedido: z.number().int().positive(),
   id_tipo_entrega: z.number().int().positive(),
+  pronto_retirada: z.boolean().optional(),
+  entregue: z.boolean().optional(),
   meio_pagamento: z.string().trim().min(1).max(50),
   valor_total: z.number().nonnegative(),
   valor_frete: z.number().nonnegative(),

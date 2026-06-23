@@ -125,6 +125,8 @@ model pedido {
   data_pedido      DateTime      @default(now())
   id_status_pedido Int
   id_tipo_entrega  Int
+  pronto_retirada  Boolean       @default(false)
+  entregue         Boolean       @default(false)
   meio_pagamento   String        @db.VarChar(50)
   valor_total      Decimal       @db.Decimal(10, 2)
   valor_frete      Decimal       @db.Decimal(10, 2)
