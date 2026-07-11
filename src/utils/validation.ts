@@ -34,6 +34,23 @@ export const refreshSchema = z.object({
   refreshToken: z.string().min(1, "refreshToken é necessário"),
 });
 
+export const userProfileUpdateSchema = z
+  .object({
+    nome: z.string().trim().min(1, "Nome é necessario").max(100).optional(),
+    email: z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+      emailSchema.optional(),
+    ),
+    telefone: z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+      telefoneSchema.optional(),
+    ),
+  })
+  .refine((value) => Boolean(value.email || value.telefone), {
+    message: "Informe email ou telefone",
+    path: ["email"],
+  });
+
 export const produtoCreateSchema = z.object({
   nome: z.string().trim().min(1, "nome é necessario").max(100),
   codigo_sku: z.string().trim().min(1, "codigo_sku é necessario").max(50),

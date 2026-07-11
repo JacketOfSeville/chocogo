@@ -6,9 +6,11 @@ import {
   verifyPassword,
   verifyToken,
 } from "../services/authService";
+import { verifyAccessToken } from "../middleware/authMiddleware";
 import { ADMIN_ROLE_ID, USER_ROLE_ID } from "../middleware/authMiddleware";
 import { ApiError } from "../utils/errors";
-import { loginSchema, refreshSchema, registerSchema } from "../utils/validation";
+import { requireUser } from "../utils/request";
+import { loginSchema, refreshSchema, registerSchema, userProfileUpdateSchema } from "../utils/validation";
 
 const router = Router();
 
@@ -147,6 +149,76 @@ router.post("/refresh", async (req, res, next) => {
 
 router.post("/logout", (_req, res) => {
   res.status(200).json({ message: "Logout successful" });
+});
+
+router.put("/me", verifyAccessToken, async (req, res, next) => {
+  try {
+    const parsedBody = userProfileUpdateSchema.safeParse(req.body);
+
+    if (!parsedBody.success) {
+      throw new ApiError(400, parsedBody.error.issues[0]?.message ?? "Corpo da requisição inválido");
+    }
+
+    const user = requireUser(req);
+
+    const currentUser = await prisma.usuario.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        telefone: true,
+        id_tipo_usuario: true,
+      },
+    });
+
+    if (!currentUser) {
+      throw new ApiError(404, "Usuário não encontrado");
+    }
+
+    if (parsedBody.data.email !== undefined || parsedBody.data.telefone !== undefined) {
+      const existingUser = await prisma.usuario.findFirst({
+        where: {
+          id: { not: user.id },
+          OR: [
+            ...(parsedBody.data.email ? [{ email: parsedBody.data.email }] : []),
+            ...(parsedBody.data.telefone ? [{ telefone: parsedBody.data.telefone }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (existingUser) {
+        throw new ApiError(409, "Email ou telefone já em uso");
+      }
+    }
+
+    const updatedUser = await prisma.usuario.update({
+      where: { id: user.id },
+      data: {
+        ...(parsedBody.data.nome !== undefined ? { nome: parsedBody.data.nome } : {}),
+        ...(parsedBody.data.email !== undefined ? { email: parsedBody.data.email } : {}),
+        ...(parsedBody.data.telefone !== undefined ? { telefone: parsedBody.data.telefone } : {}),
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        telefone: true,
+        id_tipo_usuario: true,
+      },
+    });
+
+    res.status(200).json({
+      id: updatedUser.id,
+      nome: updatedUser.nome,
+      email: updatedUser.email,
+      telefone: updatedUser.telefone,
+      roleId: updatedUser.id_tipo_usuario,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get("/roles", (_req, res) => {
