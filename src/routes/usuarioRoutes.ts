@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
-import { ADMIN_ROLE_ID, requireRole, verifyAccessToken } from "../middleware/authMiddleware";
+import { ADMIN_ROLE_ID, USER_ROLE_ID, requireRole, verifyAccessToken } from "../middleware/authMiddleware";
 import { ApiError } from "../utils/errors";
-import { parsePositiveInt } from "../utils/request";
+import { parsePositiveInt, requireUser } from "../utils/request";
+import { usuarioRoleUpdateSchema } from "../utils/validation";
 
 const router = Router();
 
@@ -101,6 +102,45 @@ router.get("/:id", async (req, res, next) => {
     }
 
     res.status(200).json(usuario);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/:id/role", async (req, res, next) => {
+  try {
+    const targetId = parsePositiveInt(req.params.id, "id de Usuario");
+    const actor = requireUser(req);
+    const parsed = usuarioRoleUpdateSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.issues[0]?.message ?? "Papel de usuário inválido");
+    }
+
+    if (targetId === actor.id && parsed.data.id_tipo_usuario === USER_ROLE_ID) {
+      throw new ApiError(403, "Você não pode remover sua própria permissão de administrador");
+    }
+
+    const target = await prisma.usuario.findUnique({ where: { id: targetId }, select: { id: true } });
+
+    if (!target) {
+      throw new ApiError(404, "Usuário não encontrado");
+    }
+
+    const updated = await prisma.usuario.update({
+      where: { id: targetId },
+      data: { id_tipo_usuario: parsed.data.id_tipo_usuario },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        telefone: true,
+        id_tipo_usuario: true,
+        data_criacao: true,
+      },
+    });
+
+    res.status(200).json(updated);
   } catch (error) {
     next(error);
   }

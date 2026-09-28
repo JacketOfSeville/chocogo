@@ -15,6 +15,7 @@ import { pedidoRoutes } from "./routes/pedidoRoutes";
 import { produtoRoutes } from "./routes/produtoRoutes";
 import { produtoCategoriaRoutes } from "./routes/produtoCategoriaRoutes";
 import { produtoImagemRoutes } from "./routes/produtoImagemRoutes";
+import { pushRoutes } from "./routes/pushRoutes";
 import { usuarioRoutes } from "./routes/usuarioRoutes";
 import { isApiError } from "./utils/errors";
 
@@ -82,6 +83,7 @@ app.use("/api/categorias", categoriaRoutes);
 app.use("/api/produto-categorias", produtoCategoriaRoutes);
 app.use("/api/produto-imagens", produtoImagemRoutes);
 app.use("/api/usuarios", usuarioRoutes);
+app.use("/api/push", pushRoutes);
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new Error(`Rota não encontrada: ${req.method} ${req.originalUrl}`));

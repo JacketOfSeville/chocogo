@@ -5,6 +5,7 @@ import { verifyAccessToken } from "../middleware/authMiddleware";
 import { ApiError } from "../utils/errors";
 import { canAccessUserResource, isAdmin, parsePositiveInt, requireUser } from "../utils/request";
 import { carrinhoCheckoutSchema, carrinhoCreateSchema, carrinhoUpdateSchema } from "../utils/validation";
+import { notifyAdmins } from "../services/pushService";
 
 const router = Router();
 
@@ -316,6 +317,12 @@ router.post("/:id/checkout", async (req, res, next) => {
           valor_total: valorTotal,
         },
       };
+    });
+
+    void notifyAdmins({
+      title: "Novo pedido recebido",
+      body: `Pedido #${result.pedido.id} foi realizado.`,
+      url: `/admin/pedidos/${result.pedido.id}`,
     });
 
     res.status(201).json(result);

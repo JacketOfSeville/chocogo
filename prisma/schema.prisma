@@ -38,17 +38,29 @@ model categoria {
 }
 
 model usuario {
-  id              Int          @id @default(autoincrement())
-  nome            String       @db.VarChar(100)
-  email           String?      @db.VarChar(100)
-  telefone        String?      @db.VarChar(20)
-  senha           String       @db.VarChar(254)
-  id_tipo_usuario Int
-  data_criacao    DateTime     @default(now())
-  carrinho        carrinho[]
-  endereco        endereco[]
-  pedido          pedido[]
-  tipo_usuario    tipo_usuario @relation(fields: [id_tipo_usuario], references: [id])
+  id                Int                @id @default(autoincrement())
+  nome              String             @db.VarChar(100)
+  email             String?            @db.VarChar(100)
+  telefone          String?            @db.VarChar(20)
+  senha             String             @db.VarChar(254)
+  id_tipo_usuario   Int
+  data_criacao      DateTime           @default(now())
+  carrinho          carrinho[]
+  endereco          endereco[]
+  pedido            pedido[]
+  push_subscription push_subscription[]
+  tipo_usuario      tipo_usuario       @relation(fields: [id_tipo_usuario], references: [id])
+  @@schema("chocogo")
+}
+
+model push_subscription {
+  id           Int      @id @default(autoincrement())
+  id_usuario   Int
+  endpoint     String   @unique @db.VarChar(500)
+  p256dh       String   @db.VarChar(255)
+  auth         String   @db.VarChar(255)
+  data_criacao DateTime @default(now())
+  usuario      usuario  @relation(fields: [id_usuario], references: [id], onDelete: Cascade)
   @@schema("chocogo")
 }
 

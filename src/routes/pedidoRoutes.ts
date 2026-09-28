@@ -2,6 +2,7 @@ import { Prisma } from "../../generated/prisma/client";
 import { Router } from "express";
 import { prisma } from "../../lib/prisma";
 import { verifyAccessToken } from "../middleware/authMiddleware";
+import { notifyUser } from "../services/pushService";
 import { ApiError } from "../utils/errors";
 import { canAccessUserResource, isAdmin, parsePositiveInt, requireUser } from "../utils/request";
 import { pedidoCreateSchema, pedidoUpdateSchema } from "../utils/validation";
@@ -207,6 +208,28 @@ router.put("/:id", async (req, res, next) => {
     }
 
     const updated = await prisma.pedido.update({ where: { id }, data: updateData });
+
+    const statusChanged = parsed.data.id_status_pedido !== undefined && parsed.data.id_status_pedido !== current.id_status_pedido;
+    const prontoRetiradaChanged = parsed.data.pronto_retirada !== undefined && parsed.data.pronto_retirada !== current.pronto_retirada;
+    const entregueChanged = parsed.data.entregue !== undefined && parsed.data.entregue !== current.entregue;
+
+    if (statusChanged || prontoRetiradaChanged || entregueChanged) {
+      const statusPedido = await prisma.status_pedido.findUnique({ where: { id: updated.id_status_pedido }, select: { descricao: true } });
+
+      const statusDescricao = statusPedido?.descricao ?? `status #${updated.id_status_pedido}`;
+      const detalhes = entregueChanged && updated.entregue
+        ? "Seu pedido foi entregue."
+        : prontoRetiradaChanged && updated.pronto_retirada
+          ? "Seu pedido está pronto para retirada."
+          : `Novo status: ${statusDescricao}.`;
+
+      void notifyUser(updated.id_usuario, {
+        title: `Pedido #${updated.id} atualizado`,
+        body: detalhes,
+        url: `/meus-pedidos/${updated.id}`,
+      });
+    }
+
     res.status(200).json(updated);
   } catch (error) {
     next(error);

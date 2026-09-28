@@ -118,6 +118,10 @@ export const enderecoUpdateSchema = enderecoCreateSchema.partial().refine(
   { message: "Informe ao menos um campo para atualização" },
 );
 
+export const usuarioRoleUpdateSchema = z.object({
+  id_tipo_usuario: z.union([z.literal(1), z.literal(2)]),
+});
+
 export const categoriaCreateSchema = z.object({
   nome: z.string().trim().min(1).max(50),
   descricao: z.string().trim().optional(),
@@ -181,6 +185,18 @@ export const pedidoUpdateSchema = pedidoCreateSchema.partial().refine(
   (value) => Object.keys(value).length > 0,
   { message: "Informe ao menos um campo para atualização" },
 );
+
+export const pushSubscriptionCreateSchema = z.object({
+  endpoint: z.string().trim().min(1).max(500),
+  keys: z.object({
+    p256dh: z.string().trim().min(1).max(255),
+    auth: z.string().trim().min(1).max(255),
+  }),
+});
+
+export const pushUnsubscribeSchema = z.object({
+  endpoint: z.string().trim().min(1).max(500),
+});
 
 export const pedidoItemCreateSchema = z.object({
   id_pedido: z.number().int().positive(),
