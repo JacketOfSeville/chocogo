@@ -54,6 +54,9 @@ router.post("/", verifyAccessToken, requireRole([ADMIN_ROLE_ID]), async (req, re
         id_produto: parsed.data.id_produto,
         quantidade: parsed.data.quantidade,
         quantidade_min: parsed.data.quantidade_min,
+        ...(parsed.data.valor_unitario !== undefined
+          ? { valor_unitario: new Prisma.Decimal(parsed.data.valor_unitario) }
+          : {}),
       },
     });
 
@@ -101,6 +104,10 @@ router.put("/:id", verifyAccessToken, requireRole([ADMIN_ROLE_ID]), async (req, 
 
     if (parsed.data.quantidade_min !== undefined) {
       updateData.quantidade_min = parsed.data.quantidade_min;
+    }
+
+    if (parsed.data.valor_unitario !== undefined) {
+      updateData.valor_unitario = new Prisma.Decimal(parsed.data.valor_unitario);
     }
 
     const updated = await prisma.estoque.update({

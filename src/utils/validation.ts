@@ -68,6 +68,7 @@ export const estoqueCreateSchema = z.object({
   id_produto: z.number().int().positive(),
   quantidade: z.number().int().min(0),
   quantidade_min: z.number().int().min(0),
+  valor_unitario: z.number().nonnegative().optional(),
 });
 
 export const estoqueUpdateSchema = estoqueCreateSchema.partial().refine(

@@ -167,6 +167,7 @@ model estoque {
   id_produto     Int
   quantidade     Int
   quantidade_min Int
+  valor_unitario Decimal? @db.Decimal(10, 2)
   data_update    DateTime @default(now())
   produto        produto  @relation(fields: [id_produto], references: [id])
   @@schema("chocogo")
