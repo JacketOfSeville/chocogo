@@ -57,11 +57,12 @@ async function sendToSubscriptions(
             },
           },
           serializedPayload,
+          { TTL: 60, urgency: "high" },
         );
       } catch (error) {
         const statusCode = (error as { statusCode?: number }).statusCode;
 
-        // endpoint expirado ou revogado pelo navegador; remove para evitar tentativas futuras
+        // endpoint expirado ou revogado pelo navegador, remove para evitar tentativas futuras
         if (statusCode === 404 || statusCode === 410) {
           await prisma.push_subscription.delete({ where: { id: subscription.id } }).catch(() => undefined);
           return;

@@ -10,6 +10,11 @@ const router = Router();
 router.get("/", async (_req, res, next) => {
   try {
     const produtos = await prisma.produto.findMany({
+      include: {
+        _count: {
+          select: { itens: true },
+        },
+      },
       orderBy: {
         id: "asc",
       },
@@ -163,6 +168,12 @@ router.delete("/:id", verifyAccessToken, requireRole([ADMIN_ROLE_ID]), async (re
 
     if (!current) {
       throw new ApiError(404, "Produto não encontrado");
+    }
+
+    const orderItemCount = await prisma.pedido_item.count({ where: { id_produto: id } });
+
+    if (orderItemCount > 0) {
+      throw new ApiError(409, "Este produto faz parte de um ou mais pedidos e não pode ser excluído");
     }
 
     await prisma.produto.delete({ where: { id } });
