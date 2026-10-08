@@ -34,6 +34,15 @@ export const refreshSchema = z.object({
   refreshToken: z.string().min(1, "refreshToken é necessário"),
 });
 
+export const passwordResetRequestSchema = z.object({
+  email: emailSchema,
+});
+
+export const passwordResetSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/, "Token de recuperação inválido"),
+  senha: z.string().min(8, "A senha deve ter pelo menos 8 caracteres").max(72),
+});
+
 export const userProfileUpdateSchema = z
   .object({
     nome: z.string().trim().min(1, "Nome é necessario").max(100).optional(),

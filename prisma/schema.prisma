@@ -49,6 +49,7 @@ model usuario {
   endereco          endereco[]
   pedido            pedido[]
   push_subscription push_subscription[]
+  password_reset   password_reset[]
   tipo_usuario      tipo_usuario       @relation(fields: [id_tipo_usuario], references: [id])
   @@schema("chocogo")
 }
@@ -61,6 +62,17 @@ model push_subscription {
   auth         String   @db.VarChar(255)
   data_criacao DateTime @default(now())
   usuario      usuario  @relation(fields: [id_usuario], references: [id], onDelete: Cascade)
+  @@schema("chocogo")
+}
+
+model password_reset {
+  id           Int      @id(map: "newtable_pk") @default(autoincrement())
+  id_usuario   Int
+  token_hash   String   @unique(map: "password_reset_unique") @db.Char(64)
+  expires_at   DateTime
+  created_at   DateTime @default(now())
+  usuario      usuario  @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "password_reset_usuario_fkey")
+  @@index([id_usuario])
   @@schema("chocogo")
 }
 
